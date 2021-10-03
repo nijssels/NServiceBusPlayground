@@ -1,5 +1,10 @@
-﻿using System;
-using Topshelf;
+﻿using Core.Messages;
+using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using NLog.Extensions.Logging;
+using NServiceBus;
+using NServiceBus.Extensions.Logging;
+using NServiceBus.Logging;
 
 namespace NServiceBusService
 {
@@ -7,23 +12,34 @@ namespace NServiceBusService
     {
         static void Main(string[] args)
         {
-            var rc = HostFactory.Run(x =>
-            {
-                x.Service<ServiceInstance>(s =>
+            CreateHostBuilder(args).Build().Run();
+        }
+
+        static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
+                .UseConsoleLifetime()
+                .UseNServiceBus(ctx =>
                 {
-                    s.ConstructUsing(name => new ServiceInstance());
-                    s.WhenStarted(tc => tc.Start());
-                    s.WhenStopped(tc => tc.Stop());
+                    LogManager.UseFactory(new ExtensionsLoggerFactory(new NLogLoggerFactory()));
+
+                    var endpointConfiguration = new EndpointConfiguration("playground.service");
+                    endpointConfiguration.UseSerialization<NewtonsoftSerializer>()
+                                         .Settings(new JsonSerializerSettings { Formatting = Formatting.Indented });
+
+                    endpointConfiguration.UseTransport<RabbitMQTransport>()
+                                         .ConnectionString("amqp://localhost")
+                                         .UseConventionalRoutingTopology()
+                                         .Routing().RouteToEndpoint(
+                                           assembly: typeof(SampleMessage).Assembly,
+                                           destination: "playground.service");
+
+                    endpointConfiguration.UsePersistence<LearningPersistence>();
+
+                    endpointConfiguration.EnableInstallers();
+
+                    return endpointConfiguration;
                 });
-                x.RunAsLocalSystem();
-
-                x.SetDescription("NService bus service instance");
-                x.SetDisplayName("NService bus service instance");
-                x.SetServiceName("NService bus service instance");
-            });
-
-            var exitCode = (int)Convert.ChangeType(rc, rc.GetTypeCode());
-            Environment.ExitCode = exitCode;
         }
     }
 }
