@@ -23,6 +23,7 @@
     <PackageReference Include="NServiceBus" Version="7.5.0" />
     <PackageReference Include="NServiceBus.Extensions.Logging" Version="1.0.0" />
     <PackageReference Include="NServiceBus.Newtonsoft.Json" Version="2.3.0" />
+    <PackageReference Include="NServiceBus.RabbitMQ" Version="6.1.0" />
     <PackageReference Include="Topshelf" Version="4.3.0" />
   </ItemGroup>
 

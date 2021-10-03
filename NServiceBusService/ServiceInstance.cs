@@ -27,12 +27,16 @@ namespace NServiceBusService
             endpointConfiguration.UseSerialization<NewtonsoftSerializer>()
                                  .Settings(new JsonSerializerSettings { Formatting = Formatting.Indented });
 
-            var transport = endpointConfiguration.UseTransport<LearningTransport>();
-            transport.Routing().RouteToEndpoint(
-                assembly: typeof(SampleMessage).Assembly,
-                destination: "playground.service");
+            endpointConfiguration.UseTransport<RabbitMQTransport>()
+                                 .ConnectionString("amqp://localhost")
+                                 .UseConventionalRoutingTopology()
+                                 .Routing().RouteToEndpoint(
+                                   assembly: typeof(SampleMessage).Assembly,
+                                   destination: "playground.service");
 
             endpointConfiguration.UsePersistence<LearningPersistence>();
+
+            endpointConfiguration.EnableInstallers();
 
             await Endpoint.Start(endpointConfiguration);
         }
