@@ -1,4 +1,5 @@
 ﻿using Core.Messages;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
@@ -19,6 +20,10 @@ namespace NServiceBusService
         {
             return Host.CreateDefaultBuilder(args)
                 .UseConsoleLifetime()
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                })
                 .UseNServiceBus(ctx =>
                 {
                     LogManager.UseFactory(new ExtensionsLoggerFactory(new NLogLoggerFactory()));
@@ -28,7 +33,7 @@ namespace NServiceBusService
                                          .Settings(new JsonSerializerSettings { Formatting = Formatting.Indented });
 
                     endpointConfiguration.UseTransport<RabbitMQTransport>()
-                                         .ConnectionString("amqp://localhost")
+                                         .ConnectionString("amqp://127.0.0.1")
                                          .UseConventionalRoutingTopology()
                                          .Routing().RouteToEndpoint(
                                            assembly: typeof(SampleMessage).Assembly,
@@ -39,7 +44,8 @@ namespace NServiceBusService
                     endpointConfiguration.EnableInstallers();
 
                     return endpointConfiguration;
-                });
+                })
+                ;
         }
     }
 }

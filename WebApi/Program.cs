@@ -1,5 +1,6 @@
 using Core.Messages;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
@@ -41,6 +42,10 @@ namespace WebApi
                     endpointConfiguration.EnableInstallers();
 
                     return endpointConfiguration;
+                })
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddEnvironmentVariables();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
