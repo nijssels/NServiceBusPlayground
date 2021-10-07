@@ -1,6 +1,8 @@
+using Core;
 using Core.Messages;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
@@ -24,6 +26,7 @@ namespace WebApi
                 {
                     config.AddEnvironmentVariables();
                 })
+                .ConfigureServices(sp => sp.AddSingleton<IHostedService>(new ProceedIfRabbitMqIsAlive("rabbitmq")))
                 .UseNServiceBus(c =>
                 {
                     LogManager.UseFactory(new ExtensionsLoggerFactory(new NLogLoggerFactory()));

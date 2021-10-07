@@ -1,5 +1,7 @@
-﻿using Core.Messages;
+﻿using Core;
+using Core.Messages;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using NLog.Extensions.Logging;
@@ -25,6 +27,7 @@ namespace NServiceBusService
                 {
                     config.AddEnvironmentVariables();
                 })
+                .ConfigureServices(sp => sp.AddSingleton<IHostedService>(new ProceedIfRabbitMqIsAlive("rabbitmq")))
                 .UseNServiceBus(ctx =>
                 {
                     LogManager.UseFactory(new ExtensionsLoggerFactory(new NLogLoggerFactory()));
