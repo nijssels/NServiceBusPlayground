@@ -3,25 +3,24 @@ version: '3.4'
 services:
   webapi:
     image: ${DOCKER_REGISTRY-}webapi
-    build:
-      context: .
-      dockerfile: WebApi/Dockerfile
     ports:
-        - "5000:5000"
-        - "5001:5001"
+      - "5000:5000"
     depends_on:
-            - rabbitmq
+      - rabbitmq
+    environment:
+      - rabbitmqhost=rabbitmq
+      - ASPNETCORE_URLS=http://+:5000
   nservicebusservice:
     image: ${DOCKER_REGISTRY-}nservicebusservice
-    build:
-      context: .
-      dockerfile: NServiceBusService/Dockerfile
     depends_on:
-            - rabbitmq
+      - rabbitmq
+    environment:
+      - rabbitmqhost=rabbitmq
   rabbitmq:
         image: "rabbitmq:3.8-management"
         ports:
-            - "15672:15672"
+          - "5672:5672"
+          - "15672:15672"
         healthcheck:
             test: ["CMD-SHELL", "if rabbitmqctl status; then \nexit 0 \nfi \nexit 1"]
             interval: 10s

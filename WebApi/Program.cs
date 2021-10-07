@@ -7,6 +7,7 @@ using NLog.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Extensions.Logging;
 using NServiceBus.Logging;
+using System;
 
 namespace WebApi
 {
@@ -19,6 +20,10 @@ namespace WebApi
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                })
                 .UseNServiceBus(c =>
                 {
                     LogManager.UseFactory(new ExtensionsLoggerFactory(new NLogLoggerFactory()));
@@ -28,8 +33,10 @@ namespace WebApi
                     endpointConfiguration.UseSerialization<NewtonsoftSerializer>()
                                          .Settings(new JsonSerializerSettings { Formatting = Formatting.Indented });
 
+                    var rabbitMqHost = c.Configuration["rabbitmqhost"];
+
                     endpointConfiguration.UseTransport<RabbitMQTransport>()
-                                         .ConnectionString("amqp://localhost")
+                                         .ConnectionString($"host={rabbitMqHost}")
                                          .UseConventionalRoutingTopology()
                                          .Routing().RouteToEndpoint(
                                            assembly: typeof(SampleMessage).Assembly,
@@ -42,10 +49,6 @@ namespace WebApi
                     endpointConfiguration.EnableInstallers();
 
                     return endpointConfiguration;
-                })
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.AddEnvironmentVariables();
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {

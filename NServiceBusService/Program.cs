@@ -6,6 +6,7 @@ using NLog.Extensions.Logging;
 using NServiceBus;
 using NServiceBus.Extensions.Logging;
 using NServiceBus.Logging;
+using System;
 
 namespace NServiceBusService
 {
@@ -32,8 +33,10 @@ namespace NServiceBusService
                     endpointConfiguration.UseSerialization<NewtonsoftSerializer>()
                                          .Settings(new JsonSerializerSettings { Formatting = Formatting.Indented });
 
+                    var rabbitMqHost = ctx.Configuration["rabbitmqhost"];
+
                     endpointConfiguration.UseTransport<RabbitMQTransport>()
-                                         .ConnectionString("amqp://127.0.0.1")
+                                         .ConnectionString($"host={rabbitMqHost}")
                                          .UseConventionalRoutingTopology()
                                          .Routing().RouteToEndpoint(
                                            assembly: typeof(SampleMessage).Assembly,

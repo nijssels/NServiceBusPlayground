@@ -1,7 +1,10 @@
 {
   "profiles": {
     "Project": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "environmentVariables": {
+        "rabbitmqhost": "localhost"
+      }
     }
   }
 }
